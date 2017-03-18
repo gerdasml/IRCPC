@@ -1,0 +1,18 @@
+﻿<Window x:Class="IrcUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:IrcUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <RichTextBox x:Name="showMessages" IsReadOnly="True" HorizontalAlignment="Left" Height="168" Margin="24,21,0,0" VerticalAlignment="Top" Width="470">
+            <FlowDocument>
+                <Paragraph LineHeight="2" />
+            </FlowDocument>
+        </RichTextBox>
+        <TextBox x:Name="writeMessages" HorizontalAlignment="Left" Height="58" Margin="24,213,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="470"/>
+
+    </Grid>
+</Window>
