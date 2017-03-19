@@ -18,6 +18,7 @@ namespace IRCPC
         private StreamWriter _writer;
         private Task _listeningTask;
         public event EventHandler<IrcMessage> MessageReceived;
+        public string MyNick { get; private set; }
         public IrcClient(string server, int port)
         {
             _server = server;
@@ -62,10 +63,12 @@ namespace IRCPC
         {
             _writer.WriteLine(message);
             _writer.Flush();
+
         }
 
         public void Connect(string nickname, string realName)
         {
+            MyNick = nickname;
             SendMessage("Nick " + nickname);
             SendMessage("User " + nickname + " 0 * : " + realName);
         }
@@ -79,20 +82,14 @@ namespace IRCPC
             _socket.Close();
         }
 
-        public void SendPrivateMessage(string friendNick, string privMessage)
+        public void SendMessage(string friendNick, string privMessage)
         {
             SendMessage("privmsg " + friendNick + " : " + privMessage);
         }
 
         public void JoinGroupChat(string chatName)
         {
-            SendMessage("join #" + chatName);
-        }
-
-        public void SendGroupMessage(string chatName, string chatMessage)
-        {
-            SendMessage("privmsg #" + chatName + " :" + chatMessage);
-            Console.WriteLine();
+            SendMessage("join " + chatName);
         }
 
         public void LeaveGroupChat(string chatName, string reason)
