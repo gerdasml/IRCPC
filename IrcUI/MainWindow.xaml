@@ -5,20 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:IrcUI"
         mc:Ignorable="d"
+        Closing="Window_Closing"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <RichTextBox x:Name="showMessages" IsReadOnly="True" HorizontalAlignment="Left" Height="148" Margin="170,41,0,0" VerticalAlignment="Top" Width="324">
+    <Grid x:Name="main">
+        <RichTextBox x:Name="showMessages" Visibility="Hidden" IsReadOnly="True" HorizontalAlignment="Left" Height="148" Margin="170,41,0,0" VerticalAlignment="Top" Width="324">
             <FlowDocument>
                 <Paragraph LineHeight="2" />
             </FlowDocument>
         </RichTextBox>
         <TextBox x:Name="writeMessages" HorizontalAlignment="Left" Height="58" Margin="170,213,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="324"/>
-        <ListView x:Name="chatName" HorizontalAlignment="Left" Height="230" Margin="10,41,0,0" VerticalAlignment="Top" Width="143">
+        <ListView x:Name="chatName" SelectionChanged="chatName_SelectionChanged" HorizontalAlignment="Left" Height="230" Margin="10,41,0,0" VerticalAlignment="Top" Width="143">
 
         </ListView>
         <Label x:Name="label" Content="Chat names" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="143" FontWeight="Bold" FontStyle="Italic" FontSize="16"/>
         <TextBox x:Name="textBox" KeyDown="textBox_KeyDown" HorizontalAlignment="Left" Height="23" Margin="10,276,0,0" TextWrapping="Wrap" Text="New chat" VerticalAlignment="Top" Width="143" />
         <Button x:Name="sendMessage" Click="sendMessage_Click" Content="Send" HorizontalAlignment="Left" Margin="419,279,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="leave" Click="leave_Click" Content="Leave chat" IsEnabled="False" HorizontalAlignment="Left" Margin="170,279,0,0" VerticalAlignment="Top" Width="75"/>
 
     </Grid>
 </Window>

@@ -18,9 +18,12 @@ namespace IRCPC
         private StreamWriter _writer;
         private Task _listeningTask;
         public event EventHandler<IrcMessage> MessageReceived;
+        private StreamWriter _logger = new StreamWriter(new FileStream("log.txt", FileMode.Append));
         public string MyNick { get; private set; }
         public IrcClient(string server, int port)
         {
+            _logger.AutoFlush = true;
+
             _server = server;
             _port = port;
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -34,27 +37,37 @@ namespace IRCPC
 
             _listeningTask = new Task(() => Listen());
             _listeningTask.Start();
+
         }
 
         private async void Listen()
         {
             while (true)
             {
-                var message = await _reader.ReadLineAsync();
-                if (message.StartsWith("PING", StringComparison.InvariantCultureIgnoreCase))
+                try
                 {
-                    StringBuilder sb = new StringBuilder(message);
-                    sb[1] = 'O';
-                    Console.WriteLine("\t" + message);
-                    Console.WriteLine("\t" + sb.ToString());
-                    SendMessage(sb.ToString());
-                }
-                else
-                {
-                    if (MessageReceived != null)
+
+                    var message = await _reader.ReadLineAsync();
+                    _logger.WriteLine(string.Format("[{0}] s:\t{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), message));
+                    if (message.StartsWith("PING", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        MessageReceived(this, new IrcMessage(message));
+                        StringBuilder sb = new StringBuilder(message);
+                        sb[1] = 'O';
+                        Console.WriteLine("\t" + message);
+                        Console.WriteLine("\t" + sb.ToString());
+                        SendMessage(sb.ToString());
                     }
+                    else
+                    {
+                        if (MessageReceived != null)
+                        {
+                            MessageReceived(this, new IrcMessage(message));
+                        }
+                    }
+                }
+                catch(Exception )
+                {
+                    break;
                 }
             }
         }
@@ -63,7 +76,7 @@ namespace IRCPC
         {
             _writer.WriteLine(message);
             _writer.Flush();
-
+            _logger.WriteLine(string.Format("[{0}] c:\t{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), message));
         }
 
         public void Connect(string nickname, string realName)
@@ -92,9 +105,9 @@ namespace IRCPC
             SendMessage("join " + chatName);
         }
 
-        public void LeaveGroupChat(string chatName, string reason)
+        public void LeaveGroupChat(string chatName)
         {
-            SendMessage("part #" + chatName + " :" + reason);
+            SendMessage("part " + chatName);
         }
     }
 }
