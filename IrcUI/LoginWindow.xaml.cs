@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -27,7 +28,20 @@ namespace IrcUI
         public LoginWindow()
         {
             InitializeComponent();
-            _ircClient = new IrcClient("irc.freenode.net", 6667); // sito reik Login'e
+            try
+            {
+                _ircClient = new IrcClient("irc.freenode.net", 6667); // sito reik Login'e
+            }
+            catch (SocketException)
+            {
+                MessageBox.Show("Failed to connect.");
+                this.Close();
+            }
+            catch(Exception)
+            {
+                MessageBox.Show("Something went wrong.");
+                this.Close();
+            }
         }
 
         private void login_Click(object sender, RoutedEventArgs e)

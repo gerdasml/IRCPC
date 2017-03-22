@@ -32,7 +32,7 @@ namespace IrcUI
 
         public void InitializeIrc()
         {
-            _ircClient.MessageReceived += (sender, message) => // sito reik cia
+            _ircClient.MessageReceived += (sender, message) => 
             {
                 Dispatcher.Invoke(() => 
                 {
@@ -49,6 +49,11 @@ namespace IrcUI
                             var currentBox = _chatBoxez.Where(x => x.Value.Visibility == Visibility.Visible).FirstOrDefault();
                             currentBox.Value?.AppendLine(FormatMessage(message), messageColor);
                         }
+                    }
+                    //handlinam is servo gautas zinutes
+                    else
+                    {
+
                     }
                 });
                 //Console.WriteLine(message);
