@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IrcClient.cs" />
+    <Compile Include="IrcException.cs" />
     <Compile Include="IrcMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
