@@ -181,7 +181,7 @@ namespace IRCPC
         public IrcClient(string server, int port)
         {
             _logger.AutoFlush = true;
-
+            //cia reiktu try catch?
             _server = server;
             _port = port;
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
