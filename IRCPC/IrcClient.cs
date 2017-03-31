@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IRCPC
@@ -18,7 +19,11 @@ namespace IRCPC
         private StreamWriter _writer;
         private Task _listeningTask;
         public event EventHandler<IrcMessage> MessageReceived;
+        public event EventHandler<IrcMessage> ErrorOccurred;
         private StreamWriter _logger = new StreamWriter(new FileStream("log.txt", FileMode.Append));
+
+        ManualResetEvent loginFinished = new ManualResetEvent(false);
+        bool loginSuccess = false;
         public string MyNick { get; private set; }
 
         private List<string> _errorList = new List<string>
@@ -181,7 +186,7 @@ namespace IRCPC
         public IrcClient(string server, int port)
         {
             _logger.AutoFlush = true;
-            //cia reiktu try catch?
+            //cia reiktu to try catch apie kuri kalbejai?
             _server = server;
             _port = port;
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -193,12 +198,15 @@ namespace IRCPC
             _reader = new StreamReader(_stream);
             _writer = new StreamWriter(_stream);
 
-            _listeningTask = new Task(() => Listen());
-            _listeningTask.Start();
+           
 
         }
-
-        private async void Listen()
+        public void Listen()
+        {
+            _listeningTask = new Task(() => Listener());
+            _listeningTask.Start();
+        }
+        private async void Listener()
         {
             while (true)
             {
@@ -220,9 +228,15 @@ namespace IRCPC
                     {
                         var smth = new IrcMessage(message);
 
-                        if (smth.Host == null && _errorList.Contains(smth.Command))
+                        if (smth.Command == "001")
                         {
-                            throw new IrcException(smth.Message);
+                            loginSuccess = true;
+                            loginFinished.Set();
+                        }
+                        if (smth.Host == null && _errorList.Contains(smth.Command) && ErrorOccurred != null)
+                        {
+                            loginFinished.Set();
+                            ErrorOccurred(this, smth);
                         } 
 
                         if (MessageReceived != null)
@@ -231,11 +245,7 @@ namespace IRCPC
                         }
                     }
                 }
-                catch (IrcException e)
-                {
-                    throw e;
-                }
-                catch(Exception )
+                catch(Exception)
                 {
                     break;
                 }
@@ -249,11 +259,15 @@ namespace IRCPC
             _logger.WriteLine(string.Format("[{0}] c:\t{1}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), message));
         }
 
-        public void Connect(string nickname, string realName)
+        public bool Connect(string nickname, string realName)
         {
+            loginFinished.Reset();
             MyNick = nickname;
-            SendMessage("Nick " + nickname);
             SendMessage("User " + nickname + " 0 * : " + realName);
+            SendMessage("Nick " + nickname);
+
+            loginFinished.WaitOne();
+            return loginSuccess;
         }
 
         public void Disconnect()
@@ -278,6 +292,11 @@ namespace IRCPC
         public void LeaveGroupChat(string chatName)
         {
             SendMessage("part " + chatName);
+        }
+
+        public void CheckIfUserExists(string nick)
+        {
+            SendMessage("WHOIS "+ nick);
         }
     }
 }

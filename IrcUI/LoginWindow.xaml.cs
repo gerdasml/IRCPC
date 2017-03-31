@@ -31,17 +31,24 @@ namespace IrcUI
             try
             {
                 _ircClient = new IrcClient("irc.freenode.net", 6667); // sito reik Login'e
+                _ircClient.ErrorOccurred += (s, msg) =>
+                {
+                    MessageBox.Show(msg.Message);
+                };
+                _ircClient.Listen();
             }
             catch (SocketException)
             {
                 MessageBox.Show("Failed to connect.");
                 this.Close();
             }
-            catch(Exception)
+            
+            catch (Exception)
             {
                 MessageBox.Show("Something went wrong.");
                 this.Close();
             }
+            
         }
 
         private void login_Click(object sender, RoutedEventArgs e)
@@ -51,10 +58,19 @@ namespace IrcUI
                 MessageBox.Show("Invalid input");
                 return;
             }
-            _ircClient.Connect(nick.Text, user.Text); // connectas jau yra
+            
+            if(!_ircClient.Connect(nick.Text, user.Text))
+            {
+                return;
+            }
+            // tarkim cia nepavyksta prisijungt (pvz nickas jau naudojamas)
+            // tada issimes IrcExcpetion
+            // betdel to sustos tas Listener metodas, vadinasi nustos musu visas zinuciu gaudymas is serverio
+            // todel jau toliau bandant tarkim is naujo jungtis nieks neveiks, nes tiesiog neturesim zinuciu is servo
             MainWindow mw = new MainWindow(_ircClient); // cia perduodam ta pati objekta main langui. sitas klientas jau pasijunges, tai ten nebereiks
             mw.Show();
             this.Close();
+            
         }
     }
 }

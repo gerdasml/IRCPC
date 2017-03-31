@@ -32,6 +32,23 @@ namespace IrcUI
 
         public void InitializeIrc()
         {
+            _ircClient.ErrorOccurred += (s, msg) =>
+            {
+                var arg = msg.Arguments.Skip(1).Take(1).FirstOrDefault();
+                if (arg != null)
+                {
+                    if (chatName.Items.Contains(arg) && _chatBoxez.ContainsKey(arg))
+                    {
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            chatName.Items.Remove(arg);
+                            main.Children.Remove(_chatBoxez[arg]);
+                        });
+                        _chatBoxez.Remove(arg);
+                    }
+                }
+            };
             _ircClient.MessageReceived += (sender, message) => 
             {
                 Dispatcher.Invoke(() => 
@@ -49,11 +66,6 @@ namespace IrcUI
                             var currentBox = _chatBoxez.Where(x => x.Value.Visibility == Visibility.Visible).FirstOrDefault();
                             currentBox.Value?.AppendLine(FormatMessage(message), messageColor);
                         }
-                    }
-                    //handlinam is servo gautas zinutes
-                    else
-                    {
-
                     }
                 });
                 //Console.WriteLine(message);
@@ -78,10 +90,13 @@ namespace IrcUI
             if (Keyboard.IsKeyDown(Key.Enter))
             {
                 if (name[0] == '#') _ircClient.JoinGroupChat(name);
+                else _ircClient.CheckIfUserExists(name);
                 chatName.Items.Add(name);
                 _chatBoxez.Add(name, showMessages.DeepCopy());
                 main.Children.Add(_chatBoxez[name]);
                 textBox.Clear();
+                chatName.SelectedItem = name;
+                FocusManager.SetFocusedElement(main, writeMessages);
             }
         }
 
@@ -95,7 +110,7 @@ namespace IrcUI
             string nameOfChat = chatName.SelectedItem.ToString();
             if (nameOfChat[0] == '#') _ircClient.SendMessage(nameOfChat, writeMessages.Text);
             else _ircClient.SendMessage(nameOfChat, writeMessages.Text);
-            _chatBoxez[nameOfChat].AppendLine(string.Format("[{0}]<gerda>: {1}", DateTime.Now.ToString("HH:mm"), writeMessages.Text), "red");
+            _chatBoxez[nameOfChat].AppendLine(string.Format("[{0}]<{1}>: {2}", DateTime.Now.ToString("HH:mm"), _ircClient.MyNick, writeMessages.Text), "red");
             writeMessages.Clear();
         }
 
